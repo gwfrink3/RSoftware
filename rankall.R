@@ -1,28 +1,11 @@
-best <- function(state, outcome) {
-  ## Programmer - George W. Frink, III
-  ## copyright 2014 George W. Frink, III
-  ## Checks input and throws errors upon detection of a problem
-  ##    Specifically, a valid state name is required.
-  ##    Mispellings are not corrected.
-  ##    The software halts after throwing an "Invalid state name error"
-  ##    A valid cause of treatment is required. "Heart Failure," for example.
-  ##    If the stipulation is invalid, the software halts on an "Invalid
-  ##    outcome name" error.
-  ##
-  library(list)
-  library(pairlist)
-  library(debug)
-  library(codetools)
-  library(rstudio)
-  library(data.table)
-  ## Read outcome data
-  HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE,  )
+rankall <- function(outcome, num = "best"){
+    	HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE,  )
 	suppressWarnings(HospitalData[, 11] <- as.numeric(HospitalData[, 11])) #heart attack
 	suppressWarnings(HospitalData[, 17] <- as.numeric(HospitalData[, 17])) # heart failure
 	suppressWarnings(HospitalData[, 23] <- as.numeric(HospitalData[, 23])) # penumonia
-	StateList <- c( "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
-	 "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR",
-	 "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VI", "VA", "WA", "WV", "WI", "WY", "GU")
+	StateList <- c("AK", "AL","AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",
+	 "MA", "ME", "MD", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR",
+	 "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
 	##
 	## Check input against the list of states.
 	##
@@ -33,22 +16,60 @@ best <- function(state, outcome) {
 		HospitalData <-  na.omit(HospitalData)
 	}
 	##
-	## The three valid outcomes are prescribed.
-	##
+	## A list of the three valid outcomes are prescribed.
+
 	diseases <- c("pneumonia", "heart failure" , "heart attack")
-	if(!Outcome %in% diseases) {
+	## Match the variable 'outcome' against the list
+	## and if it is not found, return an error.
+	## Otherwise, reset 'outcome' to the data.table column name
+	## for the hospital statistics sought.
+	if(!outcome %in% diseases) {
      		stop("invalid outcome")
-	}
-	## State and Outcome are valid.
-	## Create the data tables
-		HDT <- data.table(HospitalData)
-		HDT <- subset(HDT, State == state)	
-	if(Outcome == "pneumonia"){
-		 HDT <- HDT[order(Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia,Hospital.Name)]
-	}else if(Outcome == "heart failure"){
-		HDT <- HDT[order(Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure,Hospital.Name)]
-	}else if(Outcome == "heart attack"){
-		HDT <- HDT[order(Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack,Hospital.Name)]
-	}	
-HDT[1]$Hospital.Name	 
-  }
+	}else{
+		switch(outcome, 
+			 "pneumonia" = {
+				outcome <- "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
+				},
+			"heart failure" =  {
+				outcome <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure"
+				},
+			 "heart attack"  =  {
+				outcome <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
+				}
+				)
+		}
+	## Convert the data frame to a data.table
+	## The payback is speed, especially speed of sorting
+	##
+	HDT <- data.table(HospitalData)
+	HDT <- na.omit(HDT)
+	len <- length(StateList)
+ 	HDTreturn <- data.table("hospital" = "                                ",  "state" = "      ")
+	##setnames(HDTreturn,c("Hospital Name", "State"))
+	for(i in 1:len){
+		HDTsub <- subset(HDT,State == StateList[i])
+		setkey(HDTsub,State)	
+		HDTsub <- HDTsub[order(HDTsub[[outcome]],Hospital.Name)]
+		 	if(nrow(HDTsub) <= 0){ ## No data for this state? Return NA
+				newRow <- data.table("hospital" = NA,"state" = HDTsub$State)
+				HDTreturn <- rbind(HDTreturn,newRow)
+			}else{					## Otherwise by outcome data and break ties with sort by name	
+				newRow <- data.table( "hospital" = HDTsub$Hospital.Name, "state" = HDTsub$State)	
+				if(num == "best") {
+					HDTreturn <- rbind(HDTreturn,newRow[1])
+				} else if(num == "worst") {
+						HDTreturn <- rbind(HDTreturn,newRow[nrow(newRow)])
+				} else if(num > nrow(newRow)) {
+						tempT <- data.table("hospital" = NA,"state" = StateList[i])
+						HDTreturn <- rbind(HDTreturn,tempT)
+				##	print(HDTsub$State)
+				##	print(i)
+				} else if(num <= nrow(newRow)) { 
+						HDTreturn <- rbind(HDTreturn,newRow[num])
+				} else {
+					stop("invalid enumeration") 
+				}
+			}		## End enclosing else		
+		}	## End for loop
+			return(HDTreturn)		
+	}			## End rankall
