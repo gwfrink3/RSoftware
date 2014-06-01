@@ -1,4 +1,7 @@
 rankall <- function(outcome, num = "best"){
+	## Copyright George W. Frink III, June 1, 2014
+	# Written by George W. Frink III 
+	## Contact: frink@southernconnections.net
 library(data.table)
     	HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE)
 	suppressWarnings(HospitalData[, 11] <- as.numeric(HospitalData[, 11])) #heart attack
