@@ -1,6 +1,6 @@
 rankall <- function(outcome, num = "best"){
 library(data.table)
-    	HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE,  )
+    	HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE)
 	suppressWarnings(HospitalData[, 11] <- as.numeric(HospitalData[, 11])) #heart attack
 	suppressWarnings(HospitalData[, 17] <- as.numeric(HospitalData[, 17])) # heart failure
 	suppressWarnings(HospitalData[, 23] <- as.numeric(HospitalData[, 23])) # penumonia
