@@ -3,7 +3,7 @@ best <- function(state, Outcome) {
           ## Read outcome data                                                        
           ## Check that state and outcome are valid                                   
           ## Return hospital name in that state with lowest 30-day death rate  
-	HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE,  )
+	HospitalData <- read.csv("outcome-of-care-measures.csv",  colClasses = "character",check.names = TRUE)
 	suppressWarnings(HospitalData[, 11] <- as.numeric(HospitalData[, 11])) #heart attack
 	suppressWarnings(HospitalData[, 17] <- as.numeric(HospitalData[, 17])) # heart failure
 	suppressWarnings(HospitalData[, 23] <- as.numeric(HospitalData[, 23])) # penumonia
