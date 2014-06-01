@@ -45,24 +45,22 @@ rankhospital <- function(state, outcome, num = "best"){
 		HDTsub <- HDTsub[order(HDTsub[[outcome]],Hospital.Name)]
 	# Format the return/display data.table, first with blank spaces and them with column names
 		HDTreturn <- data.table("                                ")
-		setnames(HDTreturn,c( "Hospital Name"))
+		#setnames(HDTreturn,c( "Hospital Name"))
 	
 		if(length(HDTsub) <= 0){
-			HDTreturn <- rbind(HDTreturn, list(NA))
-		}else{
-			len <- length(HDTsub$Hospital.Name)
-			HDTreturn <- data.table("Hospital Name" = HDTsub$Hospital.Name)	
+			return("NA")
 		}	
 	if(num == "best") {
-		return(HDTreturn[1])
+		return(HDTsub$Hospital.Name[1])
 
 	} else if(num == "worst") {
-		return(HDTreturn[nrow(HDTreturn)])
+		len <- length(HDTsub$Hospital.Name)
+		return(HDTsub$Hospital.Name[len])
 	} else if(is.numeric(num)) {
-		if(num > nrow(HDTreturn)){
-			return(NA)
+		if(num > length(HDTsub$Hospital.Name)){
+			return("NA")
 		}else{ 
-			return(HDTreturn[num])
+			return(HDTsub$Hospital.Name[num])
 		}
 	} else {
 		stop("invalid enumeration") 
