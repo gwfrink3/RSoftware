@@ -1,4 +1,7 @@
-best <- function(state, Outcome) {         
+best <- function(state, Outcome) {   
+	## Copyright George W. Frink III, June 1, 2014
+	# Written by George W. Frink III 
+	## Contact: frink@southernconnections.net
 	library(data.table)                                         
           ## Read outcome data                                                        
           ## Check that state and outcome are valid                                   
